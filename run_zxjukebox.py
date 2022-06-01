@@ -23,14 +23,15 @@ class Filetype(Enum):
     TZX = auto()
     ZIP = auto()
 
-def get_tzx_from_path(pathname, include_zip=False):
+def get_tzx_from_path(pathname, match="", include_zip=False):
     """
     Returns list of TZX files from a path. Can optionally include ZIP files.
     """
     extensions = {".tzx"}
+    pattern = match.lower()
     if include_zip:
         extensions.add(".zip")
-    return [p.resolve() for p in Path(pathname).glob("**/*") if p.suffix in extensions]
+    return [p.resolve() for p in Path(pathname).glob("**/*") if p.suffix in extensions and str(p).lower().find(pattern) != -1]
 
 def get_filetype(filename):
     """
@@ -68,7 +69,7 @@ def play_zip_file(filename, args):
     # Create temporary folder for ZIP
     with tempfile.TemporaryDirectory() as tempdir:
         zipfile.ZipFile(filename).extractall(tempdir)
-        tzx_files = get_tzx_from_path(tempdir)
+        tzx_files = get_tzx_from_path(tempdir, args.match)
         if not tzx_files:
             print(f"No TZX files found in {filename}!")
             return
@@ -85,6 +86,7 @@ def main():
     parser.add_argument('--once', help="Play one randomly selected file and then stop", action='store_true')
     parser.add_argument('--noplay', help="Randomly selects games but does not play them", action='store_true')
     parser.add_argument('--gap', type=int, default=5, help="Time (in seconds) to wait between each file (default is 5 seconds")
+    parser.add_argument('--match', type=str, default="", help="Find all files matching sub-string (not case sensitive)")
 
     args = parser.parse_args()
 
@@ -94,7 +96,7 @@ def main():
     if not os.path.exists(folder):
         raise RuntimeError(f"Invalid folder: {folder}")
 
-    tzx_files = get_tzx_from_path(folder, include_zip=True)
+    tzx_files = get_tzx_from_path(folder, args.match, include_zip=True)
     if not tzx_files:
         raise RuntimeError(f"No TZX files found in: {folder}")
 
