@@ -87,6 +87,7 @@ def main():
     parser.add_argument('--noplay', help="Randomly selects games but does not play them", action='store_true')
     parser.add_argument('--gap', type=int, default=5, help="Time (in seconds) to wait between each file (default is 5 seconds")
     parser.add_argument('--match', type=str, default="", help="Find all files matching sub-string (not case sensitive)")
+    parser.add_argument('--list', help="List all TZX files found and exit", action='store_true')
 
     args = parser.parse_args()
 
@@ -99,6 +100,12 @@ def main():
     tzx_files = get_tzx_from_path(folder, args.match, include_zip=True)
     if not tzx_files:
         raise RuntimeError(f"No TZX files found in: {folder}")
+
+    if args.list:
+        for tzxfile in tzx_files:
+            name = str(tzxfile).replace(folder, "", 1)
+            print(f".{name}")
+        return 0
 
     while True:
         game = random.choice(tzx_files)
