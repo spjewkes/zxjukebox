@@ -60,7 +60,10 @@ def play_tzx_file(filename, args):
         tzxplay.append("--stop")
 
     tzxplay.append(filename)
-    subprocess.run(tzxplay, check=True)
+    try:
+        subprocess.run(tzxplay, check=True)
+    except subprocess.CalledProcessError:
+        pass
 
 def play_zip_file(filename, args):
     """
